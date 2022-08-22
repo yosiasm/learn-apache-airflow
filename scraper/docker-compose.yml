@@ -1,0 +1,54 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:alpine3.16
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  elasticsearch:
+    image: elasticsearch:8.3.3
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  webserver:
+    build: ./airflow-dockerfiles
+    restart: always
+    depends_on:
+      - postgres
+      - elasticsearch
+    environment:
+      - LOAD_EX=n
+      - EXECUTOR=Local
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    volumes:
+      - ./dags:/usr/local/airflow/dags
+    ports:
+      - "5003:8080"
+    command: webserver
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "[ -m /usr/local/airflow/airflow-webserver.pid ]"
+        ]
+      interval: 30s
+      timeout: 30s
+      retries: 3
