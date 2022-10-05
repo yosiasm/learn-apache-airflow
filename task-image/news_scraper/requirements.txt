@@ -1,0 +1,6 @@
+pyopenssl==22.0.0
+psycopg2-binary==2.9.3
+requests==2.27.1
+Scrapy==2.6.2
+scrapyscript==1.1.5
+SQLAlchemy==1.4.40
